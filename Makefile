@@ -16,7 +16,7 @@ all:
 	@echo "Build for $(BUILD_OS)-$(BUILD_ARCH) on $(BUILD_DATE) by $(BUILD_USER)"
 	@rm -rf ./bin/$(BUILD_OS)-$(BUILD_ARCH)
 	@mkdir -p bin/$(BUILD_OS)-$(BUILD_ARCH)
-	@GOOS=$(BUILD_OS) GOARCH=$(BUILD_ARCH) CGO_ENABLED=0 go build -o ./bin/$(BUILD_OS)-$(BUILD_ARCH)/$(BINARY) $(VERBOSE) \
+	@GOOS=$(BUILD_OS) GOARCH=$(BUILD_ARCH) CGO_ENABLED=0 GOPROXY=https://goproxy.cn go build -o ./bin/$(BUILD_OS)-$(BUILD_ARCH)/$(BINARY) $(VERBOSE) \
 		-ldflags="-w -s \
 		-X github.com/prometheus/common/version.Version=$(APP_VERSION) \
 		-X github.com/prometheus/common/version.Revision=$(GIT_COMMIT) \
