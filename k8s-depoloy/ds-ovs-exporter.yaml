@@ -1,0 +1,125 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: ovs-exporter
+  namespace: ovs-exporter
+  labels:
+    app: ovs-exporter
+spec:
+  selector:
+    matchLabels:
+      app: ovs-exporter
+  template:
+    metadata:
+      labels:
+        app: ovs-exporter
+    spec:
+      containers:
+        - name: ovs-exporter
+          image: docker.io/kennethye/ovs-exporter:1.0.5
+          imagePullPolicy: IfNotPresent
+          args: [
+            "-database.vswitch.file.log.path=/dev/null",
+            "-service.vswitchd.file.log.path=/dev/null",
+            "-service.ovncontroller.file.log.path=/dev/null",
+            "-service.ovncontroller.file.pid.path=/dev/null"
+          ]
+          env:
+          - name: NODE_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
+          ports:
+          - containerPort: 9475
+            name: metrics
+            protocol: TCP
+          resources:
+            limits:
+              cpu: 200m
+              memory: 200Mi
+            requests:
+              cpu: 200m
+              memory: 200Mi
+        securityContext:
+          privileged: true
+          runAsUser: 0
+        volumeMounts:
+          - mountPath: /var/run/openvswitch
+            name: host-run-ovs
+            readOnly: true
+          - mountPath: /etc/openvswitch
+            name: host-config-openvswitch
+            readOnly: true
+      dnsPolicy: ClusterFirst
+      hostNetwork: true
+      hostPID: true
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: ovs-exporter
+      serviceAccountName: ovs-exporter
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - hostPath:
+            path: /run/openvswitch
+            type: ""
+          name: host-run-ovs
+        - hostPath:
+            path: /etc/origin/openvswitch
+            type: ""
+          name: host-config-openvswitch
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ovs-exporter
+  namespace: ovs-exporter
+  labels:
+    app: ovs-exporter
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: ovs-exporter
+  name: ovs-exporter-monitor
+  namespace: openshift-monitoring
+spec:
+  endpoints:
+    - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+      interval: 20s
+      port: 9475-tcp
+      path: /metrics
+      scheme: http
+  namespaceSelector:
+    matchNames:
+      - ovs-exporter
+  selector:
+    matchLabels:
+      app: ovs-exporter
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: ovs-exporter
+  namespace: ovs-exporter
+  labels:
+    app: ovs-exporter
+  annotations:
+    module: ovs-exporter
+    prometheus.io/scrape: 'true'
+    prometheus.io/scheme: 'http'
+    prometheus.io/port: '9475'
+    prometheus.io/path: '/metrics'
+spec:
+  type: ClusterIP
+  selector:
+    app: ovs-exporter
+  ports:
+    - name: 9475-tcp
+      port: 9475
+      protocol: TCP
+      targetPort: 9475
