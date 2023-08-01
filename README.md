@@ -84,3 +84,19 @@ filename="./dist/${repo}-$(< VERSION).linux-amd64.tar.gz"
 upload-github-release-asset.sh github_api_token=${github_api_token} owner=${owner} repo=${repo} tag=${tag} filename=dist/ovs-exporter-$(< VERSION).linux-amd64.tar.gz
 upload-github-release-asset.sh github_api_token=${github_api_token} owner=${owner} repo=${repo} tag=${tag} filename=dist/ovs-exporter-$(< VERSION).linux-arm64.tar.gz
 ```
+
+To build a docker image, run below commands in docker environment
+
+```bash
+docker build -t ovs-exporter:1.0.5 .
+```
+
+To deploy the ovs-exporter as container based, run below commands in openshift environment
+
+```bash
+cd k8s-deploy
+oc create namespace ovs-exporter
+oc create -f ds-ovs-exporter.yaml
+oc adm policy add-scc-to-user anyuid -z ovs-exporter -n ovs-exporter
+
+```
