@@ -97,6 +97,6 @@ To deploy the ovs-exporter as container based, run below commands in openshift e
 cd k8s-deploy
 oc create namespace ovs-exporter
 oc create -f ds-ovs-exporter.yaml
-oc adm policy add-scc-to-user anyuid -z ovs-exporter -n ovs-exporter
+oc adm policy add-scc-to-user privileged -z ovs-exporter -n ovs-exporter
 
 ```

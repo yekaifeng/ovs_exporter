@@ -41,16 +41,16 @@ spec:
             requests:
               cpu: 200m
               memory: 200Mi
-        securityContext:
-          privileged: true
-          runAsUser: 0
-        volumeMounts:
-          - mountPath: /var/run/openvswitch
-            name: host-run-ovs
-            readOnly: true
-          - mountPath: /etc/openvswitch
-            name: host-config-openvswitch
-            readOnly: true
+          securityContext:
+            privileged: true
+            runAsUser: 0
+          volumeMounts:
+            - mountPath: /var/run/openvswitch
+              name: host-run-ovs
+              readOnly: true
+            - mountPath: /etc/openvswitch
+              name: host-config-openvswitch
+              readOnly: true
       dnsPolicy: ClusterFirst
       hostNetwork: true
       hostPID: true
